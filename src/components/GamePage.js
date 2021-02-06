@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import database from "../database.js";
 import { useParams } from "react-router-dom";
-import ActiveGame from "./ActiveGame.js";
-import Lobby from "./Lobby.js";
+import ActiveGame from "./ActiveGame";
+import Lobby from "./Lobby";
 
 const GamePage = () => {
   const { id } = useParams();
@@ -47,7 +47,7 @@ const GamePage = () => {
     <div>
       {hasGameStarted === false && (
         <Lobby
-          id={id}
+          gameID={id}
           gameHost={gameHost}
           hasGameStarted={hasGameStarted}
           listOfUsers={listOfUsers}
@@ -58,7 +58,7 @@ const GamePage = () => {
       )}
       {hasGameStarted === true && (
         <ActiveGame
-          id={id}
+          gameID={id}
           gameHost={gameHost}
           hasGameStarted={hasGameStarted}
           listOfUsers={listOfUsers}

@@ -1,7 +1,9 @@
+import { Input, Button } from "antd";
+import "antd/dist/antd.css";
 import React from "react";
 import "./App.css";
 import database from "./database.js";
-import GamePage from "./game_components/GamePage.js";
+import GamePage from "./components/GamePage.js";
 
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 

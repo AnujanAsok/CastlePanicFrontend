@@ -1,12 +1,11 @@
 import { Input, Button } from "antd";
-import "antd/dist/antd.css";
 import React, { useState, useEffect } from "react";
-import database from "../database.js";
-import VotingPage from "./VotingPage.js";
+import database from "../database";
+import VotingScreen from "./VotingScreen";
 
 const ActiveGame = (props) => {
   const {
-    id,
+    gameID,
     gameHost,
     listOfUsers,
     hasGameStarted,
@@ -14,12 +13,12 @@ const ActiveGame = (props) => {
     isGameHost,
   } = props;
 
-  const gameIDRef = database.ref(`games/${id}`);
-  const focusedUserRef = database.ref(`games/${id}/focusedUser`);
+  const gameRef = database.ref(`games/${gameID}`);
+  const focusedUserRef = database.ref(`games/${gameID}/focusedUser`);
   const [questionID, setQuestionID] = useState(0);
   const [questionText, setQuestionText] = useState("");
   const [answer, setAnswer] = useState("");
-  const [displayAnswer, setDisplayAnswer] = useState([[]]);
+  const [userAnswers, setUserAnswers] = useState([]);
   const [hasSubmittedAnswer, setHasSubmittedAnswer] = useState(false);
   const [focusedUser, setFocusedUser] = useState("");
   const questions = [
@@ -31,7 +30,6 @@ const ActiveGame = (props) => {
 
   const handleClick = (e) => {
     const newQuestionID = questionID + 1;
-    console.log(newQuestionID);
 
     setHasSubmittedAnswer(false);
 
@@ -41,37 +39,34 @@ const ActiveGame = (props) => {
       listOfUsers[Math.floor(Math.random() * listOfUsers.length)];
     focusedUserRef.set(selectFocusedUser);
 
-    gameIDRef
-      .child(`questionIDs`)
-      .update({ current_question_ID: newQuestionID });
-    gameIDRef
+    gameRef.child(`questionIDs`).update({ current_question_ID: newQuestionID });
+    gameRef
       .child(`/questions/${newQuestionID}`)
       .update({ questiontxt: chosenQuestion });
   };
 
   const handleAnswerClick = () => {
-    gameIDRef
+    gameRef
       .child(`/questions/${questionID}/answers`)
       .update({ [username]: answer });
     setHasSubmittedAnswer(true);
   };
 
   useEffect(() => {
-    gameIDRef
-      .child(`questions/${questionID}/answers`)
+    gameRef
+      .child(`/questions/${questionID}/answers`)
       .on("value", (snapshot) => {
         const checkAnswers = snapshot.val();
+        console.log("check answers snapshot", checkAnswers);
         if (checkAnswers) {
-          setDisplayAnswer(Object.values(checkAnswers));
-          console.log(Object.values("What is saved to firebase", checkAnswers));
+          setUserAnswers(Object.values(checkAnswers));
         }
       });
-  }, []);
+  }, [questionID]);
 
   useEffect(() => {
     focusedUserRef.on("value", (snapshot) => {
       const checkFocusedUser = snapshot.val();
-      console.log("checking snapshot.val", checkFocusedUser);
       if (checkFocusedUser) {
         setFocusedUser(checkFocusedUser);
       }
@@ -79,7 +74,7 @@ const ActiveGame = (props) => {
   }, []);
 
   useEffect(() => {
-    gameIDRef.child(`questionIDs`).on("value", (snapshot) => {
+    gameRef.child(`questionIDs`).on("value", (snapshot) => {
       const checkQuestionID = snapshot.val();
       if (checkQuestionID) {
         setQuestionID(checkQuestionID.current_question_ID);
@@ -88,14 +83,16 @@ const ActiveGame = (props) => {
   }, []);
 
   useEffect(() => {
-    gameIDRef.child(`/questions/${questionID}`).on("value", (snapshot) => {
+    gameRef.child(`/questions/${questionID}`).on("value", (snapshot) => {
       const checkChosenQuestion = snapshot.val();
-      console.log("checking snapshot.val", checkChosenQuestion);
+      console.log("checking chosen question", checkChosenQuestion);
       if (checkChosenQuestion) {
         setQuestionText(checkChosenQuestion.questiontxt);
       }
     });
   }, [questionID]);
+
+  console.log("the length of user answers", userAnswers.length);
 
   return (
     <div>
@@ -124,10 +121,10 @@ const ActiveGame = (props) => {
           </div>
         </div>
         <div>
-          {displayAnswer.length === listOfUsers.length ? (
-            <VotingPage
-              displayAnswer={displayAnswer}
-              id={id}
+          {userAnswers.length === listOfUsers.length ? (
+            <VotingScreen
+              userAnswers={userAnswers}
+              id={gameID}
               gameHost={gameHost}
               hasGameStarted={hasGameStarted}
               listOfUsers={listOfUsers}

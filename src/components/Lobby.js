@@ -1,10 +1,9 @@
 import { Input, Button } from "antd";
-import "antd/dist/antd.css";
-import database from "../database.js";
+import database from "../database";
 
 const Lobby = (props) => {
   const {
-    id,
+    gameID,
     gameHost,
     listOfUsers,
     hasGameStarted,
@@ -12,10 +11,10 @@ const Lobby = (props) => {
     isGameHost,
     setUsername,
   } = props;
-  const gameUsernamesRef = database.ref(`games/${id}/usernames`);
+  const gameUsernamesRef = database.ref(`games/${gameID}/usernames`);
 
   const handleClick = () => {
-    const focusedUserRef = database.ref(`games/${id}/focusedUser`);
+    const focusedUserRef = database.ref(`games/${gameID}/focusedUser`);
     const selectFocusedUser =
       listOfUsers[Math.floor(Math.random() * listOfUsers.length)];
     focusedUserRef.set(selectFocusedUser);
@@ -25,7 +24,7 @@ const Lobby = (props) => {
     <div>
       <div>
         {" "}
-        Game code is: {id}
+        Game code is: {gameID}
         <div>
           <div>
             The current game host is <strong>{gameHost}</strong>
